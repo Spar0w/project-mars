@@ -1,0 +1,18 @@
+{
+    "playbook":{
+        "plugin":{
+            "chromeopener.dll":"null"
+        },
+        "command":{
+            "powershell -c \"Get-Services\"":"null"
+        },
+        "pluginArray":[
+                {"fetchlogs.dll":"null"},
+                {"chromeopener.dll":"null"}
+        ],
+        "commandArray":[
+            {"powershell -c \"ping -n 1 google.com\"": "null"},
+            {"powershell -c \"Get-Services\"":"null"}
+        ]
+    }
+}
