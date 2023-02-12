@@ -1,4 +1,4 @@
-# Threat Plugins for Cyber5W Threat Emulation Program
+# Project Mars
 
 [Wiki](https://github.com/Spar0w/capstone/wiki)
 
