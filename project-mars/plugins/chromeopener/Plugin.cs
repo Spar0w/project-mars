@@ -1,16 +1,28 @@
 ﻿//namespace chromeopener;
 using System.Diagnostics;
 using System.IO;
+using MarsClient.Plugins;
 
-class ChromeOpener{
+class ChromeOpener : Plugin
+{
 
-    public static IDictionary<string, dynamic> PluginMain(){
+    public override string Name => "ChromeOpener";
+    public override string Author => "Damir Hajrovic";
+    public override string Version => "v1";
+
+    public static IDictionary<string, dynamic> PluginMain()
+    {
         ProcessStartInfo startInfo = new ProcessStartInfo();
-        if (File.Exists("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe")) {
+        if (File.Exists("C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"))
+        {
             startInfo.FileName = "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe";
-        } else if (File.Exists("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe")){
+        }
+        else if (File.Exists("C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"))
+        {
             startInfo.FileName = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-        } else {
+        }
+        else
+        {
             IDictionary<string, dynamic> ReturnArray = new Dictionary<string, dynamic>();
             ReturnArray.Add("ExitCode", 1);
             ReturnArray.Add("ExitMessage", "Chrome not found!");

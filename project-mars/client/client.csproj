@@ -5,4 +5,10 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="MarsClient.Plugins">
+      <HintPath>..\MarsClient.Plugins\bin\Debug\net6.0\MarsClient.Plugins.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
