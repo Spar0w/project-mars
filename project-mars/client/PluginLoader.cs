@@ -40,9 +40,10 @@ namespace MarsClient
                     if(oType.IsSubclassOf(typeof(Plugin))){
                         Console.WriteLine($"PluginLoader> Found {oType.Name.ToString()} in assembly as subclass of Plugin.");
                         Plugin plugin = (Plugin)Activator.CreateInstance(oType);
+                        // save assembly to plugin
+                        // allows us to call whatever the fuck we want from the plugin!
                         plugin.Assembly = _asm;
-                        //ConstructorInfo ConstructorInfo = oType.GetConstructor(Type.EmptyTypes);
-                        //Plugin plugin = ConstructorInfo.Invoke(null) as Plugin;
+                        plugin.TypeName = oType.Name;
 
                         return plugin;
                     }

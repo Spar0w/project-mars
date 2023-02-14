@@ -48,4 +48,15 @@ class ChromeOpener : Plugin
             }
         }
     }
+
+    public OpenUrl(string[] args){
+        // Demo method that returns true back to plugin handling system
+        bool Status = true;
+        string Message = "Openned URL successfully!";
+
+        IDictionary<string, dynamic> returnDataForClient = new Dictionary<string, dynamic>();
+        returnDataForClient.Add("Status", Status);
+        returnDataForClient.Add("Message", Message);
+        return returnDataForClient;
+    }
 }
