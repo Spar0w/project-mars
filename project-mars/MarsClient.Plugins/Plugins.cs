@@ -27,6 +27,10 @@ namespace MarsClient.Plugins
         /// Gets the plugin assembly.
         /// </summary>
         public Assembly Assembly { get; set; }
+        /// <summary>
+        /// Plugin commands and their methods.
+        /// </summary>
+        public virtual Dictionary<string,Func<string,string[]>> CommandMethods { get; set;}
 
         public Plugin()
         {
@@ -37,6 +41,12 @@ namespace MarsClient.Plugins
 
         public IDictionary<string, dynamic> RunCommand(string command, string[]? args)
         {
+            // turn string args into list
+            
+            // find relevent method from commandMethods dictionary
+            if(CommandMethods.TryGetValue(command, out Func<string, string[]> method)){
+                method.Invoke(args);
+            }
 
             // parent listener demands a dictionary with at least exit code and message
             // exit code is 0 for success, 1 for failure
