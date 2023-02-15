@@ -23,10 +23,10 @@ class ChromeOpener : Plugin
         }
         else
         {
-            IDictionary<string, dynamic> ReturnArray = new Dictionary<string, dynamic>();
-            ReturnArray.Add("ExitCode", 1);
-            ReturnArray.Add("ExitMessage", "Chrome not found!");
-            return ReturnArray;
+            IDictionary<string, dynamic> ReturnDict = new Dictionary<string, dynamic>();
+            ReturnDict.Add("ExitCode", 1);
+            ReturnDict.Add("ExitMessage", "Chrome not found!");
+            return ReturnDict;
         }
         startInfo.UseShellExecute = false;
         startInfo.RedirectStandardOutput = true;
@@ -39,17 +39,17 @@ class ChromeOpener : Plugin
                 //string result = await reader.ReadToEndAsync();
 
                 // return a dict with info for client to process
-                IDictionary<string, dynamic> ReturnArray = new Dictionary<string, dynamic>();
+                IDictionary<string, dynamic> ReturnDict = new Dictionary<string, dynamic>();
                 // return an exitcode, 0 for success, 1 for failure
                 // ideally, we would return the exitcode of the process or dynamically set it based on the result of the process
-                ReturnArray.Add("ExitCode", 0);
-                ReturnArray.Add("ExitMessage", "Chrome opened successfully!");
-                return ReturnArray;
+                ReturnDict.Add("ExitCode", 0);
+                ReturnDict.Add("Status", "Chrome opened successfully!");
+                return ReturnDict;
             }
         }
     }
 
-    public OpenUrl(string[] args){
+    public IDictionary<string, dynamic> OpenUrl(string[] args){
         // Demo method that returns true back to plugin handling system
         bool Status = true;
         string Message = "Openned URL successfully!";

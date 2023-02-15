@@ -101,8 +101,14 @@ namespace MarsClient.Plugins
             }
             
             try {
-                if( pluginCmdReturn["Status"] ){
+                if( pluginCmdReturn.ContainsKey("Status")){
                     // set exit code to 0 for success
+
+                    //combine the plugin's return and the new return
+                    foreach(KeyValuePair<string, dynamic> msgs in pluginCmdReturn){
+                        returnDataForClient.Add(msgs);
+                    }
+
                     returnDataForClient.Add("ExitCode", 0);
                     // set message to success message
                     returnDataForClient.Add("ExitMessage", pluginCmdReturn["Message"]);

