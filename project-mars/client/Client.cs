@@ -165,13 +165,17 @@ namespace MarsClient
                 
                 // don't pass another shell to this command shell!!!
                 foreach(string[] command in commandSet.commands){
-                    string result;
+                    string result = "";
                     if (command[1] == "console"){
                         result = await ConsoleCommand(command[0]);
                     } else if (command[1] == "plugin") {
                         //the null here should be the parameters passed to the plugin that is being run
                         //result = PluginCommand(command[0], null);
-                        result = RunPluginCommandFromBase64(command[0], null, null);
+                        if (2 < command.Length){
+                            result = RunPluginCommandFromBase64(command[0], null, new[]{command[2]});
+                        } else {
+                            result = RunPluginCommandFromBase64(command[0], null, null);
+                        }
                     } else {
                         result = "Failed";
                     }

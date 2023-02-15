@@ -126,6 +126,8 @@ __________                   __               __       _____
                 return 1;
             } else if(firstprompt == "Plugin") {
                 string thirdprompt = "";
+                string fourthprompt = "";
+                string input = "";
                 if (ListPlugins().Length != 0){
                     thirdprompt = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
@@ -133,11 +135,21 @@ __________                   __               __       _____
                             .PageSize(10)
                             .AddChoices(ListPlugins())
                     );
+                    fourthprompt = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("Provide plugin input? ")
+                            .PageSize(10)
+                            .AddChoices(new [] {"Yes", "No"})
+                    );
+                    if (fourthprompt == "Yes"){
+                        input = AnsiConsole.Ask<string>("Enter plugin [red]input:[/] ");
+                    }
+
                     if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
                         //add plugin to command que
                         //should add the specific function to be run by the plugin
                         //but that's for later
-                        agent.commandQue.AddLast(new string[]{this.listener.Base64EncodeFile(this.listener.pluginDict[thirdprompt]), "plugin"});
+                        agent.commandQue.AddLast(new string[]{this.listener.Base64EncodeFile(this.listener.pluginDict[thirdprompt]), "plugin", input});
                         Console.WriteLine("\n");
                         return 0;
                     } else {

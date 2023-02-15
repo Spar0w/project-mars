@@ -39,3 +39,4 @@ server/server.csproj
 server/data/*
 
 .vscode
+project-mars/plugins/*/compiletestplugin.ps1
