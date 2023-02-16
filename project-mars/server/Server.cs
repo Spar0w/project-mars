@@ -18,7 +18,6 @@ namespace server
                 tname = args[0];
                 tipaddress = args[1];
                 tport = Int32.Parse(args[2]);
-                //Listener test = new Listener(args[0], tport, args[2]);
             } catch (System.IndexOutOfRangeException) {
                 tport = 1234;
                 tname = "Default";

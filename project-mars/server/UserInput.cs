@@ -1,6 +1,6 @@
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
-using Spectre.Console;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -36,13 +36,22 @@ __________                   __               __       _____
             // Add some columns
             menuOptions.AddColumn("#");
             menuOptions.AddColumn(new TableColumn("Command"));
-
+            string[] options = null;
             // Add some rows
-            menuOptions.AddRow("1","[red]Exit[/]");
-            menuOptions.AddRow("2","[blue]List all Clients[/]");
-            menuOptions.AddRow("3", "[fuchsia]List Available Plugins[/]");
-            menuOptions.AddRow("4","[green]Command[/]");
-            menuOptions.AddRow("5","[purple]View Responses[/]");
+            if (ListClients().Length == 0){
+                menuOptions.AddRow("", "No Clients Registered. Some options are not shown");
+                menuOptions.AddRow("1","[red]Exit[/]");
+                menuOptions.AddRow("2","[blue]List all Clients[/]");
+                options = new[] {"Exit", "List Clients"};
+            } else {
+                // Add some rows
+                menuOptions.AddRow("1","[red]Exit[/]");
+                menuOptions.AddRow("2","[blue]List all Clients[/]");
+                menuOptions.AddRow("3", "[fuchsia]List Available Plugins[/]");
+                menuOptions.AddRow("4","[green]Command[/]");
+                menuOptions.AddRow("5","[purple]View Responses[/]");
+                options = new[] {"Exit", "List Clients", "List Available Plugins", "Command", "View Responses"};
+            }
 
             // Render the tables to the console
             AnsiConsole.Write(menuOptions);
@@ -51,9 +60,7 @@ __________                   __               __       _____
                 new SelectionPrompt<string>()
                     .Title("What would you like to do?")
                     .PageSize(10)
-                    .AddChoices(new[] {
-                        "Exit", "List Clients", "List Available Plugins", "Command", "View Responses"
-                }));
+                    .AddChoices(options));
             return prompt;
         }
 
@@ -63,49 +70,83 @@ __________                   __               __       _____
             bool menuLoop = true;
             while(menuLoop){
                 string input = Menu();
-                switch(input){
-                    case "Exit":
-                        //exiting our loop here will terminate the server
-                        menuLoop = false;
-                        break;
-                    case "List Clients":
-                        var clients = new Table();
-                        clients.AddColumn("Registered Clients");
-                        foreach(var agent in ListClients()){
-                            clients.AddRow(agent);
-                        }
-                        AnsiConsole.Write(clients);
-                        break;
-                    case "Command":
-                        SetCommand();
-                        break;
-                    case "View Responses":
-                        var comT = new Table();
-                        ViewResponses();
-                        break;
-                    case "List Available Plugins":
-                        var plugins = new Table();
-                        plugins.AddColumn("Installed Plugins");
-                        foreach(var plugin in ListPlugins()){
-                            if (ListPlugins().Length != 0) {
-                                plugins.AddRow(plugin);
+                // only list all options if there are registered clients
+                if (ListClients().Length != 0){
+                    switch(input){
+                        case "Exit":
+                            //exiting our loop here will terminate the server
+                            menuLoop = false;
+                            break;
+                        case "List Clients":
+                            var clients = new Table();
+                            clients.AddColumn("Registered Clients");
+                            foreach(var agent in ListClients()){
+                                clients.AddRow(agent);
                             }
-                        }
-                        AnsiConsole.Write(plugins);
-                        break;
-                    default: 
-                        Console.WriteLine("\nInvalid input; Please try again.");
-                        break;
+                            AnsiConsole.Write(clients);
+                            break;
+                        case "Command":
+                            SetCommand();
+                            break;
+                        case "View Responses":
+                            var comT = new Table();
+                            ViewResponses();
+                            break;
+                        case "List Available Plugins":
+                            var plugins = new Table();
+                            if (ListPlugins().Length != 0) {
+                                plugins.AddColumn("Installed Plugins");
+                                foreach(var plugin in ListPlugins()){
+                                    plugins.AddRow(plugin);
+                                }
+                            } else {
+                                plugins.AddColumn("No plugins installed! Compile and place plugins in the listener's plugin folder!");
+                            }
+                            AnsiConsole.Write(plugins);
+                            break;
+                        default: 
+                            Console.WriteLine("\nInvalid input; Please try again.");
+                            break;
+                    }
+                } else {
+                    switch(input){
+                        case "Exit":
+                            //exiting our loop here will terminate the server
+                            menuLoop = false;
+                            break;
+                        case "List Clients":
+                            var clients = new Table();
+                            clients.AddColumn("Registered Clients");
+                            foreach(var agent in ListClients()){
+                                clients.AddRow(agent);
+                            }
+                            AnsiConsole.Write(clients);
+                            break;
+                        default: 
+                            Console.WriteLine("\nInvalid input; Please try again.");
+                            break;
+                    }
                 }
             }
         }
         public int SetCommand(){
+
+            //prevent user from running plugins or playbooks if they dont exist
+            string[] options = null;
+            if (ListPlugins().Length == 0){
+                options = new[] {"Console Command"};
+            } else if (ListPlaybooks().Length == 0){
+                options = new[] {"Console Command", "Plugin"};
+            } else {
+                options = new[] {"Console Command", "Plugin", "Playbook"};
+            }
+
             //set a command for a client to query
             var firstprompt = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Would you like to run a console command, one plugin, or a playbook?")
                     .PageSize(10)
-                    .AddChoices(new[] {"Console Command","Plugin","Playbook"})
+                    .AddChoices(options)
             );
             var prompt = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
@@ -201,8 +242,6 @@ __________                   __               __       _____
 
         private string[] ListClients(){
             //Converts client list to a string array
-            //List<Agent> agents = this.listener.agents;
-            //var enum = this.listener.agents.GetEnumerator();
             var agents = this.listener.agents;
             string[] agentArr = new string[agents.Count];
             int count = 0;
