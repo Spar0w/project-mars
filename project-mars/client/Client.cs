@@ -176,9 +176,13 @@ namespace MarsClient
                         //result = PluginCommand(command[0], null);
                         //if (2 < command.Length){
                         try{
-                            string[] commands = JsonSerializer.Deserialize<string[]>(command[2]);
-                            result = RunPluginCommandFromBase64(file, null, commands);
-                        } catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) {
+                            if (command[2] != null){
+                                string[] commands = JsonSerializer.Deserialize<string[]>(command[2]);
+                                result = RunPluginCommandFromBase64(file, null, commands);
+                            } else {
+                                result = RunPluginCommandFromBase64(file, null, null);
+                            }
+                        } catch (Exception e) {
                             result = RunPluginCommandFromBase64(file, null, null);
                         }
                     } else {
