@@ -166,6 +166,7 @@ namespace MarsClient
                 // don't pass another shell to this command shell!!!
                 foreach(dynamic[] command in commandSet.commands){
                     string result = "";
+                    //var is called file, but it could be a command line command
                     string file = command[0].ToString();
                     string type = command[1].ToString();
 
@@ -176,13 +177,17 @@ namespace MarsClient
                         //result = PluginCommand(command[0], null);
                         //if (2 < command.Length){
                         try{
-                            if (command[2] != null){
-                                string[] commands = JsonSerializer.Deserialize<string[]>(command[2]);
-                                result = RunPluginCommandFromBase64(file, null, commands);
+                            string[] pars = JsonSerializer.Deserialize<string[]>(command[2]);
+                            if (pars != null){
+                                result = RunPluginCommandFromBase64(file, null, pars);
                             } else {
+                                //Console.WriteLine("hi");
                                 result = RunPluginCommandFromBase64(file, null, null);
                             }
                         } catch (Exception e) {
+                            Console.WriteLine("hi");
+                            Console.WriteLine(e);
+                            Console.WriteLine();
                             result = RunPluginCommandFromBase64(file, null, null);
                         }
                     } else {

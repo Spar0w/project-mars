@@ -225,7 +225,7 @@ __________                   __               __       _____
                         foreach (Playbook.playbookCommand p in pb.playbookQue){
                             if (p.type == "plugin"){
                                 //add a plugin if it is a plugin
-                                agent.commandQue.AddLast(new string[]{this.listener.Base64EncodeFile(this.listener.pluginDict[p.command.Key].Path), p.type});
+                                agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(this.listener.pluginDict[p.command.Key].Path), p.type, p.command.Value});
                             } else if (p.type == "command"){
                                 //add a command if it is a command
                                 string[] c_command = {p.command.Key, "console"};

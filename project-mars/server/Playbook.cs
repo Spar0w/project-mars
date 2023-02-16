@@ -7,12 +7,12 @@ namespace server{
     public class Playbook{
         public string path {get; set;}
         public List<playbookCommand> playbookQue {get; set;}
-        public List<KeyValuePair<string, string>> plugins {get; set;}
+        public List<KeyValuePair<string, dynamic>> plugins {get; set;}
         public List<KeyValuePair<string, string>> commands {get; set;}
 
         public struct playbookCommand{
             public string type;
-            public KeyValuePair<string, string> command;
+            public KeyValuePair<string, dynamic> command;
 
         }
 
@@ -68,7 +68,19 @@ namespace server{
                 var enumer2 = enumerator.Current.Value;
                 playbookCommand commandDeets = new playbookCommand{}; 
                 foreach (JsonProperty o in enumer2.EnumerateObject()){
-                    commandDeets.command = new KeyValuePair<string,string>(o.Name, o.Value.ToString());
+                    //test to see if we are passing multiple paramaters to the plugin
+                    if (o.Value.ValueKind == JsonValueKind.Array){
+                        var enumer = o.Value.EnumerateArray();
+                        string[] coms = new string[o.Value.GetArrayLength()];
+                        int x = 0;
+                        while(enumer.MoveNext() == true){
+                            coms[x] = enumer.Current.ToString();
+                            x++;
+                        }
+                        commandDeets.command = new KeyValuePair<string,dynamic>(o.Name, coms);
+                    } else {
+                        commandDeets.command = new KeyValuePair<string,dynamic>(o.Name, o.Value.ToString());
+                    }
                     commandDeets.type = "plugin";
                 }
                 if (playbookQue == null){
@@ -79,7 +91,7 @@ namespace server{
                 var enumer2 = enumerator.Current.Value.EnumerateObject();
                 foreach (JsonProperty o in enumer2){
                     playbookCommand commandDeets = new playbookCommand{}; 
-                    commandDeets.command = new KeyValuePair<string,string>(o.Name, o.Value.ToString());
+                    commandDeets.command = new KeyValuePair<string,dynamic>(o.Name, o.Value.ToString());
                     commandDeets.type = "command";
                     playbookQue.Add(commandDeets);
                 }
@@ -95,7 +107,7 @@ namespace server{
                 while(enumer2.MoveNext() == true){
                     foreach (JsonProperty o in enumer2.Current.EnumerateObject()){
                         playbookCommand pluginDeets; 
-                        pluginDeets.command = new KeyValuePair<string,string>(o.Name, o.Value.ToString());
+                        pluginDeets.command = new KeyValuePair<string,dynamic>(o.Name, o.Value.ToString());
                         pluginDeets.type = "plugin";
                         playbookQue.Add(pluginDeets);
                     }
@@ -106,7 +118,7 @@ namespace server{
                 while(enumer2.MoveNext() == true){
                     foreach (JsonProperty o in enumer2.Current.EnumerateObject()){
                         playbookCommand commandDeets; 
-                        commandDeets.command = new KeyValuePair<string,string>(o.Name, o.Value.ToString());
+                        commandDeets.command = new KeyValuePair<string,dynamic>(o.Name, o.Value.ToString());
                         commandDeets.type = "command";
                         playbookQue.Add(commandDeets);
                     }
