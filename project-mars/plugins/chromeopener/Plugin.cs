@@ -24,8 +24,7 @@ class ChromeOpener : Plugin
         else
         {
             IDictionary<string, dynamic> ReturnDict = new Dictionary<string, dynamic>();
-            ReturnDict.Add("ExitCode", 1);
-            ReturnDict.Add("ExitMessage", "Chrome not found!");
+            ReturnDict.Add("Message", "Chrome not found!");
             return ReturnDict;
         }
         startInfo.UseShellExecute = false;
@@ -42,8 +41,9 @@ class ChromeOpener : Plugin
                 IDictionary<string, dynamic> ReturnDict = new Dictionary<string, dynamic>();
                 // return an exitcode, 0 for success, 1 for failure
                 // ideally, we would return the exitcode of the process or dynamically set it based on the result of the process
-                ReturnDict.Add("ExitCode", 0);
-                ReturnDict.Add("Status", "Chrome opened successfully!");
+                //ReturnDict.Add("ExitCode", 0);
+                ReturnDict.Add("Status", "0");
+                ReturnDict.Add("Message", "Chrome Opened Successfully!");
                 return ReturnDict;
             }
         }

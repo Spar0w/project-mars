@@ -7,23 +7,13 @@ class MarsDropper : Plugin {
     public override string Author => "Samuel Barrows";
     public override string Version => "v1";
 
-    public static IDictionary<string, dynamic> PluginMain(string? path){
+    public static IDictionary<string, dynamic> PluginMain(string path, string url){
         //temp vars because params dont work for some reason
-        //path = null;
-        string url = "https://i.sparow.club/gondolas/squat_gondolas.jpg";
-        if (path == null){
-            path = Path.GetTempFileName();
-        }
-        if (url == null){
-            IDictionary<string, dynamic> ReturnDict = new Dictionary<string, dynamic>();
-            //ReturnDict.Add("ExitCode", 1);
-            ReturnDict.Add("Message", $"You need to provide a url");
-            return ReturnDict;
-        }
-
-        using (var client = new HttpClient()){
+        //string path = args[0];
+        //string url = args[1];
+        using (var client = new WebClient()){
             try{
-                Console.WriteLine(path);
+                //Console.WriteLine(path);
                 client.DownloadFile(url, path);
 
                 IDictionary<string, dynamic> ReturnDict = new Dictionary<string, dynamic>();

