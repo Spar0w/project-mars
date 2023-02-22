@@ -69,10 +69,14 @@ namespace MarsClient.Plugins
                     } catch (Exception e) {
                         Console.WriteLine($"MarsClient.Plugins> Failed to invoke method {command} from plugin {Name}. Exception message: {e.Message}");
 
-                        // set exit code to 1 for failure
-                        returnDataForClient.Add("ExitCode", 1);
-                        // set message to exception message
-                        returnDataForClient.Add("ExitMessage", e.Message);
+                        if (!returnDataForClient.ContainsKey("ExitCode")){
+                            // set exit code to 1 for failure
+                            returnDataForClient.Add("ExitCode", 1);
+                        }
+                        if (!returnDataForClient.ContainsKey("ExitMessage")){
+                            // set message to exception message
+                            returnDataForClient.Add("ExitMessage", e.Message);
+                        }
                     }         
                 }
             }
@@ -87,16 +91,24 @@ namespace MarsClient.Plugins
                     pluginCmdReturn = (IDictionary<string, dynamic>) methodInfo.Invoke(this, args);
                 } catch (TargetException) {
                     Console.WriteLine($"MarsClient.Plugins> Failed to invoke method {command} from plugin {Name}. The specified method does not exist.");
-                    // set exit code to 1 for failure
-                    returnDataForClient.Add("ExitCode", 1);
-                    // set message to exception message
-                    returnDataForClient.Add("ExitMessage", "Command not found.");
+                    if (!returnDataForClient.ContainsKey("ExitCode")){
+                        // set exit code to 1 for failure
+                        returnDataForClient.Add("ExitCode", 1);
+                    }
+                    if (!returnDataForClient.ContainsKey("ExitMessage")){
+                        // set message to exception message
+                        returnDataForClient.Add("ExitMessage", "Command not found.");
+                    }
                 } catch (Exception e) {
                     Console.WriteLine($"MarsClient.Plugins> Failed to invoke method {command} from plugin {Name}. Exception message: {e.Message}");
-                    // set exit code to 1 for failure
-                    returnDataForClient.Add("ExitCode", 1);
-                    // set message to exception message
-                    returnDataForClient.Add("ExitMessage", e.Message);
+                    if (!returnDataForClient.ContainsKey("ExitCode")){
+                        // set exit code to 1 for failure
+                        returnDataForClient.Add("ExitCode", 1);
+                    }
+                    if (!returnDataForClient.ContainsKey("ExitMessage")){
+                        // set message to exception message
+                        returnDataForClient.Add("ExitMessage", e.Message);
+                    }
                 }
             }
             
@@ -113,15 +125,25 @@ namespace MarsClient.Plugins
                     // set message to success message
                     returnDataForClient.Add("ExitMessage", pluginCmdReturn["Message"]);
                 }else{
-                    // set exit code to 1 for failure
-                    returnDataForClient.Add("ExitCode", 1);
-                    // set message to failure message
-                    returnDataForClient.Add("ExitMessage", pluginCmdReturn["Message"]);
+                    if (!returnDataForClient.ContainsKey("ExitCode")){
+                        // set exit code to 1 for failure
+                        returnDataForClient.Add("ExitCode", 1);
+                    }
+                    if (!returnDataForClient.ContainsKey("ExitMessage")){
+                        // set message to exception message
+                        returnDataForClient.Add("ExitMessage", pluginCmdReturn["Message"]);
+                    }
                 }
             } catch {
                 // guesss i didn't get a status back? let's assume it failed
-                returnDataForClient.Add("ExitCode", 1);
-                returnDataForClient.Add("ExitMessage", "Invalid data set, terminating.");
+                if (!returnDataForClient.ContainsKey("ExitCode")){
+                    // set exit code to 1 for failure
+                    returnDataForClient.Add("ExitCode", 1);
+                }
+                if (!returnDataForClient.ContainsKey("ExitMessage")){
+                    // set message to exception message
+                    returnDataForClient.Add("ExitMessage", "Invalid data set, terminating.");
+                }
             }
 
             // parent listener demands a dictionary with at least exit code and message

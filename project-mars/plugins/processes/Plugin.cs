@@ -9,8 +9,19 @@ class Processes : Plugin {
     
     public static IDictionary<string, dynamic> PluginMain(string processPath){
         IDictionary<string, dynamic> ReturnDict = new Dictionary<string, dynamic>();
+
+        string processName = processPath.Split(@"\").Last();
+    
         Processes p = new Processes();
-        (int status, string message) = p.StartProc(processPath);
+        int status = -1;
+        string message = null;
+        //List<string> message = null;
+        try{
+            (status, message) = p.GetProc("msedge");
+        } catch (Exception e){
+            ReturnDict.Add("Message", $"Exception: {e}");
+            return ReturnDict;
+        }
         if (status == 0){
             Console.WriteLine(message);
             ReturnDict.Add("Status", status);
@@ -35,5 +46,38 @@ class Processes : Plugin {
             Console.WriteLine(e);
             return (1, $"Failed to start {processPath}. Exception: {e}");
         }
+    }
+
+    public (int, string) GetProc(string processName){
+        //
+        Process[] proc = null;
+        try{
+            proc = Process.GetProcessesByName(processName);
+        } catch (Exception e) {
+            return (1, $"Failed to get {processName}. Exception: {e}");
+        }
+        if (proc.Length == 0){
+            return (1, $"Failed to get {processName}. It might not be running or the name is wrong.");
+        } else {
+            //a big string if there are multiple processes with the same name
+            string processList = "";
+            foreach (var p in proc){
+                processList += $"{p.Id},{processName}\n";
+            }
+            return (0, processList);
+        }
+    }
+
+    public (int, string) GetProc(){
+        //get all processes and return a csv list of ID and Name
+        Process[] procs = Process.GetProcesses();
+
+        //a really big string
+        string processList = "";
+
+        foreach(var p in procs){
+            processList += $"{p.Id},{p.ProcessName}\n";
+        }
+        return (0, processList);
     }
 }
