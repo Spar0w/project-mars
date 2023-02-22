@@ -6,7 +6,7 @@ class MarsDropper : Plugin {
     public override string Author => "";
     public override string Version => "";
 
-    public IDictionary<string, dynamic> PluginMain(){
+    public static IDictionary<string, dynamic> PluginMain(){
 
     }
 }
