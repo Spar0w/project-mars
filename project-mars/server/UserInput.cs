@@ -2,6 +2,7 @@ using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace server{
@@ -181,18 +182,33 @@ __________                   __               __       _____
                     //save selected plugin to a variable
                     var plugin = this.listener.pluginDict[thirdprompt];
                     //get input depending on how many inputs the plugins need
-                    int ccount = Int32.Parse(plugin.Commands);
+                    int ccount = Int32.Parse(plugin.Commands[0].ToString());
                     if(ccount > 0){
                         input = new string[ccount];
 
-                        var commandmsg = new Table();
-                        commandmsg.AddColumn($"This plugin requires {plugin.Commands} input(s).");
-                        AnsiConsole.Write(commandmsg);
-
-                        for(int x = 0; x < ccount; x++){
-                            input[x] = AnsiConsole.Ask<string>($"Enter plugin [red]input[/] [blue]{x+1}:[/]");
+                        //handle optional inputs
+                        string newprompt = "";
+                        if (plugin.Commands.Last() == '?'){
+                            newprompt = AnsiConsole.Prompt(
+                                new SelectionPrompt<string>()
+                                    .Title("This plugin has optional input. Provide it?")
+                                    .PageSize(10)
+                                    .AddChoices(new[] {"Yes", "No"})
+                            );
+                        } else {
+                            newprompt = "Yes";
                         }
+                        if (newprompt == "Yes"){
+                            var commandmsg = new Table();
+                            commandmsg.AddColumn($"This plugin requires {plugin.Commands} input(s).");
+                            AnsiConsole.Write(commandmsg);
 
+                            for(int x = 0; x < ccount; x++){
+                                input[x] = AnsiConsole.Ask<string>($"Enter plugin [red]input[/] [blue]{x+1}:[/]");
+                            }
+                        } else {
+                            input[0] = "";
+                        }
                     }
 
                     if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
