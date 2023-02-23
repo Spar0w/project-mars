@@ -21,9 +21,11 @@ namespace server{
             this.playbookQue = new List<playbookCommand>(); 
 
             LoadPlaybook(this);
+            /*
             foreach(var o in playbookQue){
                 Console.WriteLine(o);
             }
+            */
         }
 
         public List<playbookCommand> LoadPlaybook(Playbook pb){
@@ -35,6 +37,7 @@ namespace server{
                 var reader =  new System.IO.StreamReader(pb.path);
                 //get the plugins to be used
                 JsonDocument pbContent = JsonDocument.Parse(reader.ReadToEnd());
+                reader.Close();
                 JsonElement plug = pbContent.RootElement.GetProperty("playbook");
                 //parse the details from the json file
                 var enumerator = plug.EnumerateObject();
@@ -75,11 +78,13 @@ namespace server{
                         int x = 0;
                         while(enumer.MoveNext() == true){
                             coms[x] = enumer.Current.ToString();
+                            Console.WriteLine(coms[x]);
                             x++;
                         }
                         commandDeets.command = new KeyValuePair<string,dynamic>(o.Name, coms);
                     } else {
-                        commandDeets.command = new KeyValuePair<string,dynamic>(o.Name, o.Value.ToString());
+                        string value = o.Value.ToString();
+                        commandDeets.command = new KeyValuePair<string,dynamic>(o.Name, value);
                     }
                     commandDeets.type = "plugin";
                 }
@@ -106,10 +111,24 @@ namespace server{
                 var enumer2 = enumerator.Current.Value.EnumerateArray();
                 while(enumer2.MoveNext() == true){
                     foreach (JsonProperty o in enumer2.Current.EnumerateObject()){
-                        playbookCommand pluginDeets; 
-                        pluginDeets.command = new KeyValuePair<string,dynamic>(o.Name, o.Value.ToString());
-                        pluginDeets.type = "plugin";
-                        playbookQue.Add(pluginDeets);
+                        playbookCommand commandDeets = new playbookCommand{}; 
+                        //test to see if we are passing multiple paramaters to the plugin
+                        if (o.Value.ValueKind == JsonValueKind.Array){
+                            var enumer = o.Value.EnumerateArray();
+                            string[] coms = new string[o.Value.GetArrayLength()];
+                            int x = 0;
+                            while(enumer.MoveNext() == true){
+                                coms[x] = enumer.Current.ToString();
+                                //Console.WriteLine(coms[x]);
+                                x++;
+                            }
+                            commandDeets.command = new KeyValuePair<string,dynamic>(o.Name, coms);
+                        } else {
+                            string value = o.Value.ToString();
+                            commandDeets.command = new KeyValuePair<string,dynamic>(o.Name, value);
+                        }
+                        commandDeets.type = "plugin";
+                        playbookQue.Add(commandDeets);
                     }
                 }
             } else if (enumerator.Current.Name == "commandArray"){
