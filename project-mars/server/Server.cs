@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 /*
     Init Class that is called to start the Server program.
@@ -8,7 +9,7 @@
 namespace server
 {
     public class Server{
-        static void Main(string[] args){
+        static async Task Main(string[] args){
             Console.Clear();
             //take command line arguments of Name, Port, IPaddress
             int tport;
@@ -43,7 +44,7 @@ namespace server
             //var pb = new Playbook("./sampleplaybook.json");
 
             //stop the server
-            test.Terminate();
+            await test.Terminate();
         }
     }
 

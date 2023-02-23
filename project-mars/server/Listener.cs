@@ -82,8 +82,28 @@ namespace server{
             }
         }
 
-        public void Terminate(){
+        public async Task Terminate(){
             //stop our listener
+            
+            //researalize our registered agents to save responses
+            //create the file if it exists
+            //write the data sent by the new agent to a file
+            Console.WriteLine();
+            Console.BackgroundColor=ConsoleColor.Red;
+            Console.ForegroundColor=ConsoleColor.White;
+            Console.WriteLine("ATTEMPTING TO SAVE AGENT DATA. PLEASE WAIT...");
+            Console.ResetColor();
+            Console.WriteLine();
+            foreach (var ag in this.agents){
+                try{
+                    LogServer($"Saving {ag.Key}");
+                    string filePath = $"{this.agentsPath}/{ag.Key}.json";
+                    await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(ag.Value));
+                } catch (Exception e) {
+                    LogServer($"Failed to save {ag.Key} because {e}");
+                }
+            }
+
             _listener.Stop();
         }
 
@@ -109,15 +129,6 @@ namespace server{
                 this.pluginDict.Add(plug.Name, plug);
                 LogServer($"{plug.Name} loaded to an object");
             }
-           /* 
-            foreach(string pluginFile in plugins){
-                //add the plugins to the plugin dict
-                LogServer(pluginFile);
-                //add the name as the key and the path as the value
-                string[] pluginName = pluginFile.Split('/');
-                this.pluginDict.Add(pluginName.Last(), pluginFile);
-            }
-            */
         }
 
         public void LoadRegisteredClients(){
@@ -132,6 +143,7 @@ namespace server{
                     Agent loadAgent = JsonSerializer.Deserialize<Agent>(line);
                     this.agents.Add(loadAgent.name, loadAgent);
                     LogServer($"Loading {loadAgent.name} into memory");
+                    reader.Close();
                 } catch (Exception e){
                     Console.WriteLine("exception: " + e);
                 }
@@ -272,7 +284,7 @@ namespace server{
             return Encoding.UTF8.GetString(b_base64);
         }
 
-        private void LogServer(string log){
+        public void LogServer(string log){
             //writes to a log file for the listener
             //create the file if it doesnt exist
             string path = $"{this.logPath}/log.txt";

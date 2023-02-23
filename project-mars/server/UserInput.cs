@@ -302,7 +302,7 @@ __________                   __               __       _____
             return pluginArr;
         }
 
-        public List<string> ViewResponses(){
+        public void ViewResponses(){
             //return responses sent by each client
             var prompt = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
@@ -317,8 +317,22 @@ __________                   __               __       _____
                 }
                 Console.WriteLine("\n");
             }
-            //return an empty list if the agent is not found
-            return new List<string>();
+            //optionally clear the responses as this can get cluttered now that it is persistent
+            var prompt2 = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"Would you like to [red]clear[/] the responses of [blue]{agent.name}[/]?")
+                    .PageSize(10)
+                    .AddChoices(new[]{"No", "Yes"})
+            );
+            if (prompt2 == "Yes"){
+                ClearResponses(agent);
+            }
+        }
+
+        private void ClearResponses(Agent agent){
+            //takes an agent and clears the responce dictionary
+            this.listener.LogServer($"Clearing responses of {agent.name}");
+            agent.commandResp = new List<string>();
         }
     }
 }
