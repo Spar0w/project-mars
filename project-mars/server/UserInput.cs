@@ -132,7 +132,6 @@ __________                   __               __       _____
         }
         public int SetCommand(){
             //take the user through adding commands to registered clients
-
             var prompt = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Select the client you would like to send a command to")
@@ -158,106 +157,120 @@ __________                   __               __       _____
                     .AddChoices(options)
             );
 
-            if(firstprompt == "Console Command"){
+            switch (firstprompt){
+                case "Console Command":
+                    return ConsoleCommand(prompt);
+                    break;
+                case "Plugin":
+                    return PluginCommand(prompt);
+                    break;
+                case "Playbook":
+                    return PlaybookCommand(prompt);
+                    break;
+                default:
+                    return 1;
+                    break;
+            }
+        }
+
+        private int ConsoleCommand(string prompt){
+            if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
+                var command = AnsiConsole.Ask<string>("Enter the console [red]command to run:[/] ");
+                string[] c_command = {command, "console"};
+                agent.commandQue.AddLast(c_command);
+                Console.WriteLine("\n");
+                return 0;
+            }
+            //error if agent is not found for one reason or another
+            return 1;
+        }
+
+        private int PluginCommand(string prompt){
+            string thirdprompt = "";
+            string fourthprompt = "";
+            string[] input = null;
+            if (ListPlugins().Length != 0){
+                thirdprompt = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("Select the plugin to run:")
+                        .PageSize(10)
+                        .AddChoices(ListPlugins())
+                );
+                //save selected plugin to a variable
+                var plugin = this.listener.pluginDict[thirdprompt];
+                //get input depending on how many inputs the plugins need
+                int ccount = Int32.Parse(plugin.Commands[0].ToString());
+                if(ccount > 0){
+                    input = new string[ccount];
+
+                    //handle optional inputs
+                    string newprompt = "";
+                    if (plugin.Commands.Last() == '?'){
+                        newprompt = AnsiConsole.Prompt(
+                            new SelectionPrompt<string>()
+                                .Title("This plugin has optional input. Provide it?")
+                                .PageSize(10)
+                                .AddChoices(new[] {"Yes", "No"})
+                        );
+                    } else {
+                        newprompt = "Yes";
+                    }
+                    if (newprompt == "Yes"){
+                        var commandmsg = new Table();
+                        commandmsg.AddColumn($"This plugin requires {plugin.Commands} input(s).");
+                        AnsiConsole.Write(commandmsg);
+
+                        for(int x = 0; x < ccount; x++){
+                            input[x] = AnsiConsole.Ask<string>($"Enter plugin [red]input[/] [blue]{x+1}:[/]");
+                        }
+                    } else {
+                        input[0] = "";
+                    }
+                }
+                //send to the agent
                 if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
-                    var command = AnsiConsole.Ask<string>("Enter the console [red]command to run:[/] ");
-                    string[] c_command = {command, "console"};
-                    agent.commandQue.AddLast(c_command);
+                    //add plugin to command que
+                    agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(plugin.Path), "plugin", input});
                     Console.WriteLine("\n");
                     return 0;
-                }
-                //error if agent is not found for one reason or another
-                return 1;
-            } else if(firstprompt == "Plugin") {
-                string thirdprompt = "";
-                string fourthprompt = "";
-                string[] input = null;
-                if (ListPlugins().Length != 0){
-                    thirdprompt = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("Select the plugin to run:")
-                            .PageSize(10)
-                            .AddChoices(ListPlugins())
-                    );
-                    //save selected plugin to a variable
-                    var plugin = this.listener.pluginDict[thirdprompt];
-                    //get input depending on how many inputs the plugins need
-                    int ccount = Int32.Parse(plugin.Commands[0].ToString());
-                    if(ccount > 0){
-                        input = new string[ccount];
-
-                        //handle optional inputs
-                        string newprompt = "";
-                        if (plugin.Commands.Last() == '?'){
-                            newprompt = AnsiConsole.Prompt(
-                                new SelectionPrompt<string>()
-                                    .Title("This plugin has optional input. Provide it?")
-                                    .PageSize(10)
-                                    .AddChoices(new[] {"Yes", "No"})
-                            );
-                        } else {
-                            newprompt = "Yes";
-                        }
-                        if (newprompt == "Yes"){
-                            var commandmsg = new Table();
-                            commandmsg.AddColumn($"This plugin requires {plugin.Commands} input(s).");
-                            AnsiConsole.Write(commandmsg);
-
-                            for(int x = 0; x < ccount; x++){
-                                input[x] = AnsiConsole.Ask<string>($"Enter plugin [red]input[/] [blue]{x+1}:[/]");
-                            }
-                        } else {
-                            input[0] = "";
-                        }
-                    }
-
-                    if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
-                        //add plugin to command que
-                        //should add the specific function to be run by the plugin
-                        //but that's for later
-                        agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(plugin.Path), "plugin", input});
-                        Console.WriteLine("\n");
-                        return 0;
-                    } else {
-                        return 1;
-                    }
                 } else {
                     return 1;
                 }
-                //this.listener.TransferPlugin(thirdprompt);
-            } else if (firstprompt == "Playbook") {
-                string thirdprompt = "";
-                if (ListPlaybooks().Length != 0){
-                    thirdprompt = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("Select the playbook to run:")
-                            .PageSize(10)
-                            .AddChoices(ListPlaybooks())
-                    );
-                    if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
-                        //que up the playbook plugins to run on the specific agent
-                        var pb = new Playbook(thirdprompt);
-                        //add each plugin in the playbook to the que
-                        foreach (Playbook.playbookCommand p in pb.playbookQue){
-                            if (p.type == "plugin"){
-                                //add a plugin if it is a plugin
-                                agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(this.listener.pluginDict[p.command.Key].Path), p.type, p.command.Value});
-                            } else if (p.type == "command"){
-                                //add a command if it is a command
-                                string[] c_command = {p.command.Key, "console"};
-                                agent.commandQue.AddLast(c_command);
-                            }
-                        }
-                        Console.WriteLine("\n");
-                        return 0;
-                    } else {
-                        return 1;
-                    }
-                }
-                return 0;
             } else {
                 return 1;
             }
+        }
+
+        private int PlaybookCommand(string prompt){
+           string thirdprompt = "";
+            if (ListPlaybooks().Length != 0){
+                thirdprompt = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("Select the playbook to run:")
+                        .PageSize(10)
+                        .AddChoices(ListPlaybooks())
+                );
+                if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
+                    //que up the playbook plugins to run on the specific agent
+                    var pb = new Playbook(thirdprompt);
+                    //add each plugin in the playbook to the que
+                    foreach (Playbook.playbookCommand p in pb.playbookQue){
+                        if (p.type == "plugin"){
+                            //add a plugin if it is a plugin
+                            agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(this.listener.pluginDict[p.command.Key].Path), p.type, p.command.Value});
+                        } else if (p.type == "command"){
+                            //add a command if it is a command
+                            string[] c_command = {p.command.Key, "console"};
+                            agent.commandQue.AddLast(c_command);
+                        }
+                    }
+                    Console.WriteLine("\n");
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+            return 0;
         }
 
         private string[] ListPlaybooks(){
