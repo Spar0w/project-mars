@@ -31,6 +31,8 @@ class Processes : Plugin {
 
         public (int, string) GetProc(string processName){
         //get a specific process
+
+        //if no process is provided, get all of them
         if (processName == ""){
             return GetProc();
         }

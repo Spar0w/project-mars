@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 
 class Processes : Plugin {
-    public override string Name => "Processes";
+    public override string Name => "Start Processes";
     public override string Author => "Samuel Barrows";
     public override string Version => "1";
     
