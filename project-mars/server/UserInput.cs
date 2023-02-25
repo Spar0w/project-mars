@@ -198,11 +198,34 @@ __________                   __               __       _____
                 );
                 //save selected plugin to a variable
                 var plugin = this.listener.pluginDict[thirdprompt];
-                //get input depending on how many inputs the plugins need
-                int ccount = Int32.Parse(plugin.Commands[0].ToString());
+                //get input depending on how many methods the plugins need
+                //int ccount = Int32.Parse(plugin.Commands[0].ToString());
+                int ccount = plugin.Methods.Count;
                 if(ccount > 0){
-                    input = new string[ccount];
+                    fourthprompt = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                            .Title("Select the plugin method to run:")
+                            .PageSize(10)
+                            .AddChoices(ListPluginMethods(thirdprompt))
+                    );
 
+                    var method = plugin.Methods[fourthprompt];
+
+                    if(method.arguements > 0){
+                        input = new string[method.arguements];
+                        var commandmsg = new Table();
+                        commandmsg.AddColumn($"This plugin requires {method.arguements} input(s).");
+                        AnsiConsole.Write(commandmsg);
+
+                        for(int x = 0; x < method.arguements; x++){
+                            input[x] = AnsiConsole.Ask<string>($"Enter plugin [red]input[/] [blue]{x+1}:[/]");
+                        }
+                    } else {
+                        input = new string[1];
+                        input[0] = "";
+                    }
+
+                    /*
                     //handle optional inputs
                     string newprompt = "";
                     if (plugin.Commands.Last() == '?'){
@@ -226,11 +249,12 @@ __________                   __               __       _____
                     } else {
                         input[0] = "";
                     }
+                    */
                 }
                 //send to the agent
                 if(this.listener.agents.TryGetValue(prompt, out Agent agent)){
                     //add plugin to command que
-                    agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(plugin.Path), "plugin", input});
+                    agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(plugin.Path), "plugin", fourthprompt, input});
                     Console.WriteLine("\n");
                     return 0;
                 } else {
@@ -257,7 +281,13 @@ __________                   __               __       _____
                     foreach (Playbook.playbookCommand p in pb.playbookQue){
                         if (p.type == "plugin"){
                             //add a plugin if it is a plugin
-                            agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(this.listener.pluginDict[p.command.Key].Path), p.type, p.command.Value});
+                            string method = p.command.Value[0];
+
+                            List<dynamic> templist = new List<dynamic>(p.command.Value); 
+                            templist.RemoveAt(0);
+                            dynamic restofthepie = templist.ToArray();
+
+                            agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(this.listener.pluginDict[p.command.Key].Path), p.type, method, restofthepie});
                         } else if (p.type == "command"){
                             //add a command if it is a command
                             string[] c_command = {p.command.Key, "console"};
@@ -297,6 +327,18 @@ __________                   __               __       _____
             int count = 0;
             foreach(var plugin in plugins){
                 pluginArr[count] = plugin.Key;
+                count++;
+            }
+            return pluginArr;
+        }
+
+        private string[] ListPluginMethods(string _plugin){
+            //shows all methods in the plugin dictionary
+            var methodsDict = this.listener.pluginDict[_plugin].Methods;
+            string[] pluginArr = new string[methodsDict.Count];
+            int count = 0;
+            foreach(var methods in methodsDict){
+                pluginArr[count] = methods.Key;
                 count++;
             }
             return pluginArr;

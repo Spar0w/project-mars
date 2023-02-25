@@ -6,6 +6,22 @@ namespace MarsClient.Plugins
     using System.Collections.Generic;
     using System.Reflection;
 
+
+    [System.AttributeUsage(System.AttributeTargets.Method)]
+    public class CommandAttributes : System.Attribute
+    {
+        public string name;
+        public int arguments;
+        public string description;
+
+        public CommandAttributes(string name)
+        {
+            this.name = name;
+            arguments = 2;
+            description = "No description provided";
+        }
+    }
+
     /// <summary>
     /// The base plugin class.
     /// </summary>

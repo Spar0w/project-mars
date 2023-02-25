@@ -7,6 +7,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Reflection;
+using MarsClient.Plugins;
 
 /*
     The Listener class is the main class for the server.
@@ -31,7 +33,7 @@ namespace server{
         public string key {get; set;}
         public Dictionary<string, Agent> agents{get; set;}
         //dictionary with refrences to the paths to plugins
-        public Dictionary<string, Plugin> pluginDict{get; set;}
+        public Dictionary<string, IPlugin> pluginDict{get; set;}
         private HttpListener _listener;
 
         public Listener(string name, int port, string ipaddress){
@@ -48,7 +50,7 @@ namespace server{
             this.logPath = $"{this.path}logs/";
             this.agentsPath = $"{this.path}agents/";
             this.pluginPath = $"{this.path}plugins/";
-            this.pluginDict = new Dictionary<string, Plugin>();
+            this.pluginDict = new Dictionary<string, IPlugin>();
             this.playbookPath = $"{this.path}playbooks/";
             this.agents = new Dictionary<string, Agent>();
 
@@ -111,6 +113,68 @@ namespace server{
             //on startup, load available plugins from the plugin folder
             string[] plugins = Directory.GetFiles(this.pluginPath, "*.dll");
             
+            // new method reading attributes from the plugin
+            foreach(string pluginFile in plugins){
+                LogServer(pluginFile);
+
+                // load the assembly
+                //Assembly _asm = Assembly.Load($"{this.pluginPath}\\{pluginFile}");
+                Console.WriteLine($"PluginLoader> Loading assembly {pluginFile}...");
+                string pluginDir = Path.Combine(Directory.GetCurrentDirectory(), pluginFile);
+                Assembly _asm = Assembly.LoadFile($"{pluginDir}");
+
+                string pluginName = pluginFile.Split('/').Last().Split('.').First();
+
+                //Console.WriteLine($"PluginLoader> Initializing plugin from assembly {_asm.FullName}...");
+                try {
+                    foreach(Type oType in _asm.GetTypes()){
+                        //if(oType.BaseType.FullName == typeof(Plugin).FullName){
+
+                        
+                        if (oType.IsSubclassOf(typeof(Plugin))){
+                            //Console.WriteLine($"PluginLoader> Found {oType.Name.ToString()} in assembly as subclass of Plugin.");
+
+                            // new dictionary for saving plugin methods
+                            Dictionary<string, IPluginMethod> pluginMethods = new Dictionary<string, IPluginMethod>();
+
+                            // loop through methods of class
+                            foreach (MethodInfo methodInfo in oType.GetMethods())
+                            {
+                                CommandAttributes attr = (CommandAttributes)Attribute.GetCustomAttribute(methodInfo, typeof(CommandAttributes));
+
+                                if (attr == null)
+                                {
+                                    // someone forgot a CommandAttributes attribute
+                                    continue;
+                                } 
+                                else
+                                {
+                                    // save a few things
+                                    // into a var of plugins, key is plugin name
+                                    // under that save an array of methods with their attributes
+
+                                    // generate method info
+                                    IPluginMethod _method = new IPluginMethod(attr.name, attr.description, attr.arguments);
+                                    // save to dictionary of methods
+                                    pluginMethods.Add(attr.name, _method);
+                                }
+                            }
+
+                            // create an instance of the plugin
+                            // + save the methods
+                            IPlugin _plugin = new IPlugin(pluginName, pluginMethods, pluginDir);
+                            this.pluginDict.Add(pluginName, _plugin);
+                        }
+                    }
+                    //Console.WriteLine($"PluginLoader> Could not find valid Plugin class in assembly.");
+                }
+                catch (Exception exception)
+                {
+                    //Console.WriteLine($"PluginLoader> Failed to load plugin from assembly. Exception message: {exception.Message}");
+                }
+            }
+
+            /*
             foreach(string pluginFile in plugins){
                 LogServer(pluginFile);
                 //load configs for the plugins and make plugin objects
@@ -129,6 +193,7 @@ namespace server{
                 this.pluginDict.Add(plug.Name, plug);
                 LogServer($"{plug.Name} loaded to an object");
             }
+            */
         }
 
         public void LoadRegisteredClients(){
