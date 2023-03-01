@@ -7,7 +7,9 @@ class MarsDropper : Plugin {
     public override string Author => "Samuel Barrows";
     public override string Version => "v1";
 
-    public static IDictionary<string, dynamic> PluginMain(string path, string url){
+    [CommandAttributes("Drop", arguments = 2, description = "Downloads a file from a url")]
+
+    public static IDictionary<string, dynamic> Drop(string path, string url){
         //temp vars because params dont work for some reason
         //string path = args[0];
         //string url = args[1];

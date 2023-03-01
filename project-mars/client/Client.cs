@@ -178,11 +178,12 @@ namespace MarsClient
                         //if (2 < command.Length){
                         try{
                             string[] pars = JsonSerializer.Deserialize<string[]>(command[3]);
-                            if (pars != null){
+                            if (pars != null && (pars.Length >= 1 && pars[0] != "")){
+                                Console.WriteLine("hi the if else didnt worked");
                                 result = RunPluginCommandFromBase64(file, command[2].ToString(), pars);
                             } else {
-                                //Console.WriteLine("hi");
-                                result = RunPluginCommandFromBase64(file, null, null);
+                                Console.WriteLine("hi the if else worked");
+                                result = RunPluginCommandFromBase64(file, command[2].ToString(), null);
                             }
                         } catch (Exception e) {
                             Console.WriteLine("hi");
