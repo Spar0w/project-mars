@@ -1,9 +1,9 @@
 {
     "playbook":{
         "pluginArray":[
-            {"Dropper":["C:\\Users\\Public\\Documents\\firefox.exe", "https://portableapps.com/redir2/?a=FirefoxPortable&s=s&d=pa&f=FirefoxPortable_110.0_English.paf.exe"]},
-            {"Start Process":["C:\\Users\\Public\\Documents\\firefox.exe"]},
-            {"Get Process Info": ["firefox"]}
+            {"dropper":["Drop", "C:\\Users\\Public\\Documents\\firefox.exe", "https://portableapps.com/redir2/?a=FirefoxPortable&s=s&d=pa&f=FirefoxPortable_110.0_English.paf.exe"]},
+            {"processes":["StartProc", "C:\\Users\\Public\\Documents\\firefox.exe"]},
+            {"processes": ["GetProc", "firefox"]}
         ]
     }
 }

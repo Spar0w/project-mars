@@ -281,11 +281,19 @@ __________                   __               __       _____
                     foreach (Playbook.playbookCommand p in pb.playbookQue){
                         if (p.type == "plugin"){
                             //add a plugin if it is a plugin
-                            string method = p.command.Value[0];
+                            dynamic? method = null;
+                            List<dynamic> templist = null;
+                            dynamic? restofthepie = null;
 
-                            List<dynamic> templist = new List<dynamic>(p.command.Value); 
-                            templist.RemoveAt(0);
-                            dynamic restofthepie = templist.ToArray();
+                            if (p.command.Value[0].GetType() == typeof(string)){
+                                Console.WriteLine("string");
+                                if (p.command.Value[0] != "null"){
+                                    method = p.command.Value[0];
+                                    templist = new List<dynamic>(p.command.Value); 
+                                    templist.RemoveAt(0);
+                                    restofthepie = templist.ToArray();
+                                }
+                            }
 
                             agent.commandQue.AddLast(new dynamic[]{this.listener.Base64EncodeFile(this.listener.pluginDict[p.command.Key].Path), p.type, method, restofthepie});
                         } else if (p.type == "command"){

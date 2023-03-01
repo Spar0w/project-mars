@@ -1,18 +1,17 @@
 {
     "playbook":{
         "plugin":{
-            "chromeopener.dll":"null"
+            "chromeopener":["OpenChrome"]
         },
         "command":{
-            "powershell -c \"Get-Services\"":"null"
+            "powershell -c \"whoami\"":"null"
         },
         "pluginArray":[
-                {"fetchlogs.dll":"null"},
-                {"chromeopener.dll":"null"}
+                {"fetchlogs":"null"},
+                {"chromeopener":["OpenChrome"]}
         ],
         "commandArray":[
-            {"powershell -c \"ping -n 1 google.com\"": "null"},
-            {"powershell -c \"Get-Services\"":"null"}
+            {"powershell -c \"ping -n 1 google.com\"": "null"}
         ]
     }
 }
