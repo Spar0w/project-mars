@@ -173,27 +173,6 @@ namespace server{
                     //Console.WriteLine($"PluginLoader> Failed to load plugin from assembly. Exception message: {exception.Message}");
                 }
             }
-
-            /*
-            foreach(string pluginFile in plugins){
-                LogServer(pluginFile);
-                //load configs for the plugins and make plugin objects
-                string pluginName = pluginFile.Split('/').Last().Split('.').First();
-                string plo = null;
-                try{
-                    plo = File.ReadAllText($"{this.pluginPath}{pluginName}.json");
-                } catch {
-                    Console.WriteLine($"Cannot find options for {pluginName} in {this.pluginPath}.");
-                    continue;
-                } 
-                //Console.WriteLine(plo);
-                var plug = JsonSerializer.Deserialize<Plugin>(plo);
-                plug.Path = pluginFile;
-                //add to the plugin dict
-                this.pluginDict.Add(plug.Name, plug);
-                LogServer($"{plug.Name} loaded to an object");
-            }
-            */
         }
 
         public void LoadRegisteredClients(){
@@ -288,11 +267,15 @@ namespace server{
 
             } else if (root.TryGetProperty("file", out JsonElement fileinfo)){
                 JsonElement filename = root.GetProperty("filename");
-                // this.filePath
                 byte[] bytes = Convert.FromBase64String(fileinfo.GetString());
-                File.WriteAllBytes($"{this.filePath}/{filename.GetString()}", bytes);
+                try {
+                    File.WriteAllBytes($"{this.filePath}{filename.GetString()}", bytes);
+                } catch (Exception e){
+                    // bad file. handle at some point
+                    //Console.WriteLine(e);
+                }
 
-                this.agents[hostname.GetString()].commandResp.Add($"File received and written to {this.filePath}/{filename.GetString()}");
+                this.agents[hostname.GetString()].commandResp.Add($"File received and written to {this.filePath}{filename.GetString()}");
                 return Base64EncodeString("{\"response\": \"thanks for the file\"}");
 
             } else {

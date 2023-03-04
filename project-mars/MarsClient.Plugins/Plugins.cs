@@ -51,9 +51,9 @@ namespace MarsClient.Plugins
         /// </summary>
         public string TypeName { get; set; }
         /// <summary>
-        /// Plugin commands and their methods.
+        /// Gets the plugin api version number.
         /// </summary>
-        public virtual Dictionary<string,Func<string[],IDictionary<string, dynamic>>> CommandMethods { get; set; }
+        public virtual int APIVersion { get; set; } = 1;
 
         public Plugin()
         {
@@ -76,55 +76,30 @@ namespace MarsClient.Plugins
 
             IDictionary<string, dynamic> pluginCmdReturn = null;
 
-            // find relevent method from commandMethods dictionary
+            // get the method from the assembly
+            MethodInfo methodInfo = Assembly.GetType(TypeName).GetMethod(command);
+            // invoke the method
             try {
-                if(CommandMethods.TryGetValue(command, out Func<string[],IDictionary<string, dynamic>> method)){
-                    // invoke the method
-                    try {
-                        pluginCmdReturn = (IDictionary<string, dynamic>) method(args);
-                    } catch (Exception e) {
-                        Console.WriteLine($"MarsClient.Plugins> Failed to invoke method {command} from plugin {Name}. Exception message: {e.Message}");
-
-                        if (!returnDataForClient.ContainsKey("ExitCode")){
-                            // set exit code to 1 for failure
-                            returnDataForClient.Add("ExitCode", 1);
-                        }
-                        if (!returnDataForClient.ContainsKey("ExitMessage")){
-                            // set message to exception message
-                            returnDataForClient.Add("ExitMessage", e.Message);
-                        }
-                    }         
+                pluginCmdReturn = (IDictionary<string, dynamic>) methodInfo.Invoke(this, args);
+            } catch (TargetException) {
+                Console.WriteLine($"MarsClient.Plugins> Failed to invoke method {command} from plugin {Name}. The specified method does not exist.");
+                if (!returnDataForClient.ContainsKey("ExitCode")){
+                    // set exit code to 1 for failure
+                    returnDataForClient.Add("ExitCode", 1);
                 }
-            }
-            catch {
-                // command not found, try to call the method manually
-                // this is a fallback in case the plugin doesn't have a commandMethods dictionary
-
-                // get the method from the assembly
-                MethodInfo methodInfo = Assembly.GetType(TypeName).GetMethod(command);
-                // invoke the method
-                try {
-                    pluginCmdReturn = (IDictionary<string, dynamic>) methodInfo.Invoke(this, args);
-                } catch (TargetException) {
-                    Console.WriteLine($"MarsClient.Plugins> Failed to invoke method {command} from plugin {Name}. The specified method does not exist.");
-                    if (!returnDataForClient.ContainsKey("ExitCode")){
-                        // set exit code to 1 for failure
-                        returnDataForClient.Add("ExitCode", 1);
-                    }
-                    if (!returnDataForClient.ContainsKey("ExitMessage")){
-                        // set message to exception message
-                        returnDataForClient.Add("ExitMessage", "Command not found.");
-                    }
-                } catch (Exception e) {
-                    Console.WriteLine($"MarsClient.Plugins> Failed to invoke method {command} from plugin {Name}. Exception message: {e.Message}");
-                    if (!returnDataForClient.ContainsKey("ExitCode")){
-                        // set exit code to 1 for failure
-                        returnDataForClient.Add("ExitCode", 1);
-                    }
-                    if (!returnDataForClient.ContainsKey("ExitMessage")){
-                        // set message to exception message
-                        returnDataForClient.Add("ExitMessage", e.Message);
-                    }
+                if (!returnDataForClient.ContainsKey("ExitMessage")){
+                    // set message to exception message
+                    returnDataForClient.Add("ExitMessage", "Command not found.");
+                }
+            } catch (Exception e) {
+                Console.WriteLine($"MarsClient.Plugins> Failed to invoke method {command} from plugin {Name}. Exception message: {e.Message}");
+                if (!returnDataForClient.ContainsKey("ExitCode")){
+                    // set exit code to 1 for failure
+                    returnDataForClient.Add("ExitCode", 1);
+                }
+                if (!returnDataForClient.ContainsKey("ExitMessage")){
+                    // set message to exception message
+                    returnDataForClient.Add("ExitMessage", e.Message);
                 }
             }
             
@@ -132,7 +107,8 @@ namespace MarsClient.Plugins
                 if( pluginCmdReturn.ContainsKey("Status")){
                     // set exit code to 0 for success
 
-                    //combine the plugin's return and the new return
+                    // combine the plugin's return and the new return
+                    // this should enable the custom file return function
                     foreach(KeyValuePair<string, dynamic> msgs in pluginCmdReturn){
                         returnDataForClient.Add(msgs);
                     }

