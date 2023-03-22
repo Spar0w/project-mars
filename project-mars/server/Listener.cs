@@ -15,7 +15,6 @@ using MarsClient.Plugins;
     It handles all the communication with the clients.
 */
 
-
 namespace server{
    //This class is inspired from this blog:
     //https://0xrick.github.io/misc/c2/#about-c2-servers--agents
@@ -118,22 +117,16 @@ namespace server{
                 LogServer(pluginFile);
 
                 // load the assembly
-                //Assembly _asm = Assembly.Load($"{this.pluginPath}\\{pluginFile}");
                 Console.WriteLine($"PluginLoader> Loading assembly {pluginFile}...");
                 string pluginDir = Path.Combine(Directory.GetCurrentDirectory(), pluginFile);
                 Assembly _asm = Assembly.LoadFile($"{pluginDir}");
 
                 string pluginName = pluginFile.Split('/').Last().Split('.').First();
 
-                //Console.WriteLine($"PluginLoader> Initializing plugin from assembly {_asm.FullName}...");
                 try {
                     foreach(Type oType in _asm.GetTypes()){
-                        //if(oType.BaseType.FullName == typeof(Plugin).FullName){
-
                         
                         if (oType.IsSubclassOf(typeof(Plugin))){
-                            //Console.WriteLine($"PluginLoader> Found {oType.Name.ToString()} in assembly as subclass of Plugin.");
-
                             // new dictionary for saving plugin methods
                             Dictionary<string, IPluginMethod> pluginMethods = new Dictionary<string, IPluginMethod>();
 
@@ -166,7 +159,6 @@ namespace server{
                             this.pluginDict.Add(pluginName, _plugin);
                         }
                     }
-                    //Console.WriteLine($"PluginLoader> Could not find valid Plugin class in assembly.");
                 }
                 catch (Exception exception)
                 {

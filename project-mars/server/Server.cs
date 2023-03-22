@@ -40,9 +40,6 @@ namespace server
             //acts as a block for the async functions
             input.MenuInput();
 
-            //test plugin
-            //var pb = new Playbook("./sampleplaybook.json");
-
             //stop the server
             await test.Terminate();
         }
