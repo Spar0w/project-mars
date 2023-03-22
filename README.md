@@ -20,6 +20,6 @@ In its current state, the server and client are required to be run on Windows 10
  - Writing and Installing Playbooks
  - ...
 
-[Wiki](https://github.com/Spar0w/capstone/wiki)
+[Wiki](https://github.com/Spar0w/project-mars/wiki)
 
 [Project](https://github.com/users/Spar0w/projects/1/views/1)
