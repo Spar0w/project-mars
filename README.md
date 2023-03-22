@@ -10,13 +10,13 @@ The purpose of Project Mars is to provide a simple and robust platform to emulat
 
 ## How can I use it?
 
-In its current state, the server and client are required to be run on Windows 10+ with dotnet 6.X installed. 
+In its current state, the server and client are required to be run on Windows 10+ with dotnet 6.X installed. The only third party library used is [Sprectre Console](https://spectreconsole.net/) which is used in on the server for its UI and menu. 
 
 ## Read More:
  - Install
  - Running the Server
  - Running the Client
- - Installing Plugins
+ - [Installing Plugins](https://github.com/Spar0w/project-mars/wiki/Installing-Plugins)
  - Writing and Installing Playbooks
  - ...
 
