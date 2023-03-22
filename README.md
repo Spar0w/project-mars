@@ -22,4 +22,4 @@ In its current state, the server and client are required to be run on Windows 10
 
 [Wiki](https://github.com/Spar0w/project-mars/wiki)
 
-[Project](https://github.com/users/Spar0w/projects/1/views/1)
+[Project](https://github.com/users/Spar0w/projects/2)
