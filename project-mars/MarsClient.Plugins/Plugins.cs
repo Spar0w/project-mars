@@ -6,7 +6,6 @@ namespace MarsClient.Plugins
     using System.Collections.Generic;
     using System.Reflection;
 
-
     [System.AttributeUsage(System.AttributeTargets.Method)]
     public class CommandAttributes : System.Attribute
     {
@@ -18,6 +17,19 @@ namespace MarsClient.Plugins
         {
             this.name = name;
             arguments = 2;
+            description = "No description provided";
+        }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = true)]
+    public class CommandArgument : System.Attribute
+    {
+        public string name;
+        public string description;
+
+        public CommandArgument(string name)
+        {
+            this.name = name;
             description = "No description provided";
         }
     }
@@ -61,7 +73,21 @@ namespace MarsClient.Plugins
             //Assembly = Assembly.GetExecutingAssembly();
         }
 
+        /// <summary>
+        /// Method for returning a ReturnDict for the command.
+        /// </summary>
+        public IDictionary<string, dynamic> CreateReturnDict(int status, string message){
+            IDictionary<string, dynamic> ReturnDict = new Dictionary<string, dynamic>();
 
+            ReturnDict.Add("Status", status);
+            ReturnDict.Add("Message", message);
+
+            return ReturnDict;
+        }
+
+        /// <summary>
+        /// Method for running a command from the plugin.
+        /// </summary>
         public IDictionary<string, dynamic> RunCommand(string? command, string[]? args)
         {
             // turn string args into list
