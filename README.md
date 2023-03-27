@@ -18,7 +18,6 @@ In its current state, the server and client are required to be run on Windows 10
  - [Creating Plugins](https://github.com/Spar0w/project-mars/wiki/Creating-Plugins)
  - [Installing Plugins](https://github.com/Spar0w/project-mars/wiki/Installing-Plugins)
  - [Writing and Installing Playbooks](https://github.com/Spar0w/project-mars/wiki/Writing-and-Installing-Playbooks)
- - ...
 
 [Wiki](https://github.com/Spar0w/project-mars/wiki)
 
