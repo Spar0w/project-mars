@@ -23,7 +23,6 @@ if ($LASTEXITCODE -eq 0){
     Write-Host
 
     move-item -Force ".\bin\Debug\net6.0\$($dirname[-1]).dll" "..\..\server\data\listeners\$($listenname)\plugins"
-    copy-item -Force "$($dirname[-1]).json" "..\..\server\data\listeners\$($listenname)\plugins"
 } else {
     Write-Error "FAILED"
     exit
